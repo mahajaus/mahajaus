@@ -23,6 +23,7 @@ by default with real order routing left as an inert stub.
 
 | file | purpose |
 |---|---|
+| `fetch.py` | download real Binance aggTrades archives (stdlib only) — run on your own machine |
 | `footprint.py` | aggregator: loader, bar/level volume split, delta, POC, value area, imbalances |
 | `strategy.py` | signal mechanics (stacked-imbalance continuation, delta divergence) — no edge claimed |
 | `study.py` | signal-existence study: does a bucket separate from baseline? applies the kill criteria |
@@ -242,9 +243,24 @@ python live.py --live BTCUSDT --interval 1min --tick 10
 Execution is last for a reason: a signal has to survive the study and the
 backtest before it earns the right to touch an exchange.
 
+## Getting the real data (`fetch.py`)
+
+The archives are free and need no account, but they are a plain file download,
+so this runs on **your** machine — a locked-down sandbox will have the domain
+blocked, which is expected.
+
+```bash
+python fetch.py --symbol BTCUSDT --month 2025-01          # a whole month
+python fetch.py --symbol BTCUSDT --date 2025-01-15        # a single day
+python fetch.py --symbol BTCUSDT --from 2025-01-01 --to 2025-01-07
+```
+
+Files land unzipped in `./data`, ready for `footprint.py --file`.
+
 ## Workflow, end to end
 
-1. `footprint.py --out-dir out` — aggregate a month of real aggTrades.
+0. `fetch.py --month 2025-01` — pull a month of real aggTrades (your machine).
+1. `footprint.py --out-dir out` — aggregate it.
 2. `footprint.py --inspect "<bar>"` — pass the validation gate against a
    reference chart. **Do not proceed until this matches.**
 3. `study.py --bars out/bars.parquet` — is there any signal at all? Obey the
